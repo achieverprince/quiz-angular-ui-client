@@ -9,10 +9,15 @@ import {AuthService} from '../../service/Auth.service';
 export class LoginComponent implements OnInit, AfterViewInit {
   userName: string = '';
   password: string = '';
+  error : boolean = false;
   ngOnInit() {
 
   }
   ngAfterViewInit() {
+    this.authService.setAuthorizationToken(localStorage.getItem('authToken'));
+    if (this.authService.getAuthorizationToken().length > 0) {
+      this._router.navigateByUrl('/home/default');
+    }
   }
   constructor(private _router: Router, private _ativeRouter: ActivatedRoute, private authService: AuthService) {
   }
@@ -22,11 +27,15 @@ export class LoginComponent implements OnInit, AfterViewInit {
       userName: this.userName,
       password: this.password
     };
+    this.error = false;
     this.authService.LoginUser(loginData).subscribe(resp => {
-      const keys = resp.headers.keys();
-      const headers = keys.map(key =>
-        `${key}: ${resp.headers.get(key)}`);
-      console.log(headers);
+      const authorizationToken: string = resp.headers.get('Authorization');
+      this.authService.setAuthorizationToken(authorizationToken);
+      localStorage.setItem('authToken', authorizationToken);
+      this._router.navigateByUrl('/home/default');
+    }, error => {
+      this.error = true;
+      console.log(error);
     });
   }
 }

@@ -8,14 +8,15 @@ import {Config} from 'protractor';
 import {AuthResponseConfig} from '../model/AuthResponseConfig';
 import {isNullOrUndefined} from 'util';
 
+const authHttpOptions = {
+  headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+  observe: 'response' as 'response'
+};
+
 @Injectable()
 export class AuthService {
   authorizationToken: string;
-  authHttpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type':  'application/json'
-    })
-  };
+
   httpOptions = {
     headers: new HttpHeaders({
       'Content-Type':  'application/json',
@@ -28,9 +29,10 @@ export class AuthService {
 
   }
 
-  LoginUser (data: any): Observable<HttpResponse<AuthResponseConfig>> {
-    return this.http.post<AuthResponseConfig>(this.apiService.GetAPIURL(API.login),
-      {userName: data.userName, password: data.password}, { observe: 'response' })
+  LoginUser (data: any): Observable<any> {
+    const body = {userName: data.userName, password: data.password};
+    return this.http.post<any>(this.apiService.GetAPIURL(API.login),
+      {userName: data.userName, password: data.password}, authHttpOptions)
       .pipe(
         catchError(this.handleError)
       );
@@ -55,4 +57,9 @@ export class AuthService {
   getAuthorizationToken() {
     return isNullOrUndefined(this.authorizationToken) ? '' : this.authorizationToken;
   }
+
+  setAuthorizationToken(token) {
+    this.authorizationToken = token;
+  }
 }
+
